@@ -1,0 +1,30 @@
+# Tell GitHub to ignore build artifacts and focus on source code
+*.js linguist-vendored
+*.js.map linguist-vendored
+*.css linguist-vendored
+*.css.map linguist-vendored
+*.html linguist-vendored
+*.ico linguist-vendored
+*.png linguist-vendored
+*.jpg linguist-vendored
+*.svg linguist-vendored
+*.woff linguist-vendored
+*.woff2 linguist-vendored
+*.ttf linguist-vendored
+*.eot linguist-vendored
+
+# Mark the main source directories
+demo/src/main/java/* linguist-language=Java
+demo/src/main/resources/static/frontend/src/* linguist-language=JavaScript
+
+# Ignore build directories
+demo/target/* linguist-ignored
+demo/src/main/resources/static/frontend/build/* linguist-ignored
+demo/src/main/resources/static/static/* linguist-ignored
+
+# Mark configuration files
+*.properties linguist-language=Properties
+*.yml linguist-language=YAML
+*.yaml linguist-language=YAML
+*.xml linguist-language=XML
+*.md linguist-language=Markdown 
