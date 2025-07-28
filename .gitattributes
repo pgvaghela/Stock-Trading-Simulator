@@ -1,14 +1,19 @@
-# Mark source files explicitly
+# Force language detection for all source files
 *.java linguist-language=Java
-*.jsx linguist-language=JavaScript
 *.js linguist-language=JavaScript
+*.jsx linguist-language=JavaScript
 *.css linguist-language=CSS
+*.xml linguist-language=XML
+*.properties linguist-language=Properties
+*.yml linguist-language=YAML
+*.yaml linguist-language=YAML
+*.md linguist-language=Markdown
 
-# Mark specific source directories
+# Mark specific directories as source code
 demo/src/main/java/* linguist-language=Java
 demo/src/main/resources/static/frontend/src/* linguist-language=JavaScript
 
-# Ignore build artifacts
+# Completely ignore build artifacts
 demo/target/* linguist-ignored
 demo/src/main/resources/static/frontend/build/* linguist-ignored
 demo/src/main/resources/static/frontend/node_modules/* linguist-ignored
