@@ -1,28 +1,18 @@
-# Force GitHub to recognize the main languages
+# Mark source files explicitly
 *.java linguist-language=Java
-*.js linguist-language=JavaScript
 *.jsx linguist-language=JavaScript
-*.ts linguist-language=TypeScript
-*.tsx linguist-language=TypeScript
+*.js linguist-language=JavaScript
+*.css linguist-language=CSS
 
-# Mark all source directories explicitly
+# Mark specific source directories
 demo/src/main/java/* linguist-language=Java
 demo/src/main/resources/static/frontend/src/* linguist-language=JavaScript
 
-# Ignore build artifacts and generated files
-*.js.map linguist-vendored
-*.css.map linguist-vendored
+# Ignore build artifacts
 demo/target/* linguist-ignored
 demo/src/main/resources/static/frontend/build/* linguist-ignored
-demo/src/main/resources/static/static/* linguist-ignored
 demo/src/main/resources/static/frontend/node_modules/* linguist-ignored
+demo/src/main/resources/static/static/* linguist-ignored
 
-# Mark configuration files
-*.properties linguist-language=Properties
-*.yml linguist-language=YAML
-*.yaml linguist-language=YAML
-*.xml linguist-language=XML
-*.md linguist-language=Markdown
-
-# Explicitly ignore Dockerfile from language stats
+# Ignore Dockerfile from language stats
 Dockerfile linguist-vendored 
