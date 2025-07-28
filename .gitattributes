@@ -1,0 +1,4 @@
+Dockerfile linguist-detectable=false
+*.ts linguist-language=TypeScript
+*.cs linguist-language=C#
+*.java linguist-language=Java 
