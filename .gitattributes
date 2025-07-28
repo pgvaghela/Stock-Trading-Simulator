@@ -1,30 +1,28 @@
-# Tell GitHub to ignore build artifacts and focus on source code
-*.js linguist-vendored
-*.js.map linguist-vendored
-*.css linguist-vendored
-*.css.map linguist-vendored
-*.html linguist-vendored
-*.ico linguist-vendored
-*.png linguist-vendored
-*.jpg linguist-vendored
-*.svg linguist-vendored
-*.woff linguist-vendored
-*.woff2 linguist-vendored
-*.ttf linguist-vendored
-*.eot linguist-vendored
+# Force GitHub to recognize the main languages
+*.java linguist-language=Java
+*.js linguist-language=JavaScript
+*.jsx linguist-language=JavaScript
+*.ts linguist-language=TypeScript
+*.tsx linguist-language=TypeScript
 
-# Mark the main source directories
+# Mark all source directories explicitly
 demo/src/main/java/* linguist-language=Java
 demo/src/main/resources/static/frontend/src/* linguist-language=JavaScript
 
-# Ignore build directories
+# Ignore build artifacts and generated files
+*.js.map linguist-vendored
+*.css.map linguist-vendored
 demo/target/* linguist-ignored
 demo/src/main/resources/static/frontend/build/* linguist-ignored
 demo/src/main/resources/static/static/* linguist-ignored
+demo/src/main/resources/static/frontend/node_modules/* linguist-ignored
 
 # Mark configuration files
 *.properties linguist-language=Properties
 *.yml linguist-language=YAML
 *.yaml linguist-language=YAML
 *.xml linguist-language=XML
-*.md linguist-language=Markdown 
+*.md linguist-language=Markdown
+
+# Explicitly ignore Dockerfile from language stats
+Dockerfile linguist-vendored 
