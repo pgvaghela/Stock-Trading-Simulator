@@ -83,7 +83,7 @@ yarn-error.log*
 .eslintcache
 
 # React build
-demo/src/main/resources/static/build/
+demo/src/main/resources/static/frontend/build/
 demo/src/main/resources/static/node_modules/
 
 # Environment variables
