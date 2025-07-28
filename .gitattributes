@@ -1,1 +1,22 @@
- 
+# Exclude Dockerfile from language detection
+Dockerfile linguist-detectable=false
+
+# Mark JavaScript files
+*.js linguist-language=JavaScript
+*.jsx linguist-language=JavaScript
+
+# Mark CSS files
+*.css linguist-language=CSS
+
+# Mark XML files
+*.xml linguist-language=XML
+
+# Mark Properties files
+*.properties linguist-language=Properties
+
+# Mark YAML files
+*.yml linguist-language=YAML
+*.yaml linguist-language=YAML
+
+# Mark Markdown files
+*.md linguist-language=Markdown
