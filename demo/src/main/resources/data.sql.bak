@@ -1,0 +1,5 @@
+INSERT INTO stocks (symbol, name) VALUES ('AAPL', 'Apple Inc.');
+INSERT INTO stocks (symbol, name) VALUES ('GOOG', 'Alphabet Inc.');
+INSERT INTO stocks (symbol, name) VALUES ('MSFT', 'Microsoft Corp.');
+INSERT INTO stocks (symbol, name) VALUES ('TSLA', 'Tesla Inc.');
+INSERT INTO stocks (symbol, name) VALUES ('AMZN', 'Amazon.com Inc.');

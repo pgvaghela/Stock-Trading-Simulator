@@ -1,0 +1,38 @@
+# Stock Trading Simulator Configuration Template
+# Copy this file to application.properties and update with your values
+
+spring.application.name=demo
+
+# Database Configuration
+# For development (H2 in-memory)
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driver-class-name=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+
+# For production (MySQL)
+# spring.datasource.url=jdbc:mysql://your-rds-endpoint:3306/stock_simulator
+# spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+# spring.datasource.username=your_username
+# spring.datasource.password=your_password
+
+# JPA Configuration
+spring.jpa.hibernate.ddl-auto=create-drop
+spring.jpa.show-sql=true
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+
+# H2 Console (development only)
+spring.h2.console.enabled=true
+
+# Server Configuration
+server.port=8080
+server.address=0.0.0.0
+
+# Alpha Vantage API Configuration
+# Get your free API key from: https://www.alphavantage.co/support/#api-key
+market.api.key=YOUR_ALPHA_VANTAGE_API_KEY_HERE
+market.api.url=https://www.alphavantage.co/query
+
+# Logging Configuration
+logging.level.com.example.demo=INFO
+logging.level.org.springframework.web=INFO 

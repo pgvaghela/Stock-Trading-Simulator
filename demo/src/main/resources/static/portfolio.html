@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background: #f8fafc; }
+        .dashboard-card { box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 1rem; }
+        .chart-container { height: 350px; }
+        .holdings-table th, .holdings-table td { vertical-align: middle; }
+    </style>
+</head>
+<body>
+<div class="container py-4">
+    <h1 class="mb-4 text-center">Portfolio Dashboard</h1>
+    <!-- Stock Live Price Plot Card -->
+    <div class="dashboard-card p-4 bg-white mb-4" id="stockPlotCard" style="display:none;">
+      <h5>Live Price for <span id="stockSymbol"></span></h5>
+      <canvas id="stockPriceChart"></canvas>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-6 offset-md-3">
+            <form id="userForm" class="d-flex align-items-center gap-2">
+                <input type="number" class="form-control" id="userIdInput" placeholder="Enter User ID" required>
+                <button class="btn btn-primary" type="submit">Load Portfolio</button>
+                <button class="btn btn-outline-secondary" type="button" id="switchUserBtn" style="display:none;">Switch User</button>
+                <button class="btn btn-success" type="button" id="createUserBtn">Create New User</button>
+            </form>
+            <div id="portfolioInfo" class="mt-2 text-center text-muted"></div>
+        </div>
+    </div>
+    <div id="dashboard" style="display:none;">
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="dashboard-card p-4 bg-white">
+                    <h5>Portfolio Value</h5>
+                    <h2 id="portfolio-value">$0.00</h2>
+                    <div class="text-success" id="portfolio-change"></div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="dashboard-card p-4 bg-white chart-container">
+                    <canvas id="valueChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="dashboard-card p-4 bg-white">
+                    <h5>Holdings</h5>
+                    <table class="table holdings-table">
+                        <thead><tr><th>Symbol</th><th>Shares</th><th>Value</th></tr></thead>
+                        <tbody id="holdings-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="dashboard-card p-4 bg-white">
+                    <h5>Recent Transactions</h5>
+                    <table class="table">
+                        <thead><tr><th>Date</th><th>Type</th><th>Symbol</th><th>Qty</th><th>Price</th></tr></thead>
+                        <tbody id="transactions-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+const LS_KEY = 'portfolioId';
+const LS_USER = 'userId';
+let portfolioId = localStorage.getItem(LS_KEY);
+let userId = localStorage.getItem(LS_USER);
+
+// Get the selected stock symbol from localStorage
+const selectedStockSymbol = localStorage.getItem('selectedStockSymbol');
+
+// Show the stock plot card if a symbol is present
+if (selectedStockSymbol) {
+  document.getElementById('stockPlotCard').style.display = '';
+  document.getElementById('stockSymbol').textContent = selectedStockSymbol;
+
+  // Example: Fetch live prices via REST API every 5 seconds (replace with your WebSocket if available)
+  let priceData = [];
+  let timeLabels = [];
+  const ctx = document.getElementById('stockPriceChart').getContext('2d');
+  let stockChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: timeLabels,
+      datasets: [{
+        label: 'Price',
+        data: priceData,
+        borderColor: '#198754',
+        backgroundColor: 'rgba(25,135,84,0.1)',
+        tension: 0.3,
+        fill: true,
+        pointRadius: 0
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: { x: { display: false }, y: { beginAtZero: false } }
+    }
+  });
+
+  async function fetchPrice() {
+    // Replace with your actual API endpoint for live price
+    const res = await fetch(`/api/stocks/${selectedStockSymbol}`);
+    if (res.ok) {
+      const stock = await res.json();
+      const price = stock.price; // Adjust this based on your API response
+      const now = new Date().toLocaleTimeString();
+      priceData.push(price);
+      timeLabels.push(now);
+      if (priceData.length > 30) { // Keep last 30 points
+        priceData.shift();
+        timeLabels.shift();
+      }
+      stockChart.update();
+    }
+  }
+
+  fetchPrice();
+  setInterval(fetchPrice, 5000); // Update every 5 seconds
+}
+
+function showDashboard(show) {
+    document.getElementById('dashboard').style.display = show ? '' : 'none';
+    document.getElementById('switchUserBtn').style.display = show ? '' : 'none';
+}
+
+function setPortfolioInfo(msg) {
+    document.getElementById('portfolioInfo').textContent = msg;
+}
+
+async function createOrFetchPortfolio(userId) {
+    const res = await fetch('/api/portfolios', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({user: {id: Number(userId)}})
+    });
+    if (!res.ok) throw new Error('Failed to create/fetch portfolio');
+    return await res.json();
+}
+
+async function createNewUser() {
+    const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({})
+    });
+    if (!res.ok) throw new Error('Failed to create user');
+    return await res.json();
+}
+
+async function fetchValueHistory() {
+    const res = await fetch(`/api/portfolios/${portfolioId}/value-history`);
+    return await res.json();
+}
+
+async function fetchPortfolio() {
+    const res = await fetch(`/api/portfolios/${portfolioId}`);
+    return await res.json();
+}
+
+async function fetchTransactions() {
+    const res = await fetch(`/api/portfolios/${portfolioId}/transactions`);
+    return await res.json();
+}
+
+function renderChart(history) {
+    const ctx = document.getElementById('valueChart').getContext('2d');
+    const labels = history.map(h => new Date(h.timestamp).toLocaleString());
+    const data = history.map(h => h.value);
+    if (window.valueChartInstance) window.valueChartInstance.destroy();
+    window.valueChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Portfolio Value',
+                data,
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13,110,253,0.1)',
+                tension: 0.3,
+                fill: true,
+                pointRadius: 0
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: { x: { display: false }, y: { beginAtZero: true } }
+        }
+    });
+}
+
+function renderHoldings(portfolio) {
+    const tbody = document.getElementById('holdings-body');
+    tbody.innerHTML = '';
+    if (portfolio.holdings) {
+        for (const h of portfolio.holdings) {
+            tbody.innerHTML += `<tr><td>${h.symbol}</td><td>${h.quantity}</td><td>$${h.value.toFixed(2)}</td></tr>`;
+        }
+    }
+}
+
+function renderTransactions(transactions) {
+    const tbody = document.getElementById('transactions-body');
+    tbody.innerHTML = '';
+    for (const t of transactions) {
+        tbody.innerHTML += `<tr><td>${new Date(t.timestamp).toLocaleString()}</td><td>${t.type}</td><td>${t.stockSymbol}</td><td>${t.quantity}</td><td>$${t.price.toFixed(2)}</td></tr>`;
+    }
+}
+
+async function loadDashboard() {
+    setPortfolioInfo(`Portfolio ID: ${portfolioId} (User ID: ${userId})`);
+    showDashboard(true);
+    const [history, portfolio, transactions] = await Promise.all([
+        fetchValueHistory(), fetchPortfolio(), fetchTransactions()
+    ]);
+    if (history.length) {
+        document.getElementById('portfolio-value').textContent = `$${history[history.length-1].value.toFixed(2)}`;
+        const change = history[history.length-1].value - history[0].value;
+        document.getElementById('portfolio-change').textContent = `${change >= 0 ? '+' : ''}$${change.toFixed(2)} (${((change/history[0].value)*100).toFixed(2)}%)`;
+        document.getElementById('portfolio-change').className = change >= 0 ? 'text-success' : 'text-danger';
+        renderChart(history);
+    } else {
+        document.getElementById('portfolio-value').textContent = '$0.00';
+        document.getElementById('portfolio-change').textContent = '';
+        renderChart([]);
+    }
+    renderHoldings(portfolio);
+    renderTransactions(transactions);
+}
+
+document.getElementById('userForm').onsubmit = async (e) => {
+    e.preventDefault();
+    userId = document.getElementById('userIdInput').value;
+    try {
+        const portfolio = await createOrFetchPortfolio(userId);
+        portfolioId = portfolio.id;
+        localStorage.setItem(LS_KEY, portfolioId);
+        localStorage.setItem(LS_USER, userId);
+        await loadDashboard();
+    } catch (err) {
+        setPortfolioInfo('Error: ' + err.message);
+        showDashboard(false);
+    }
+};
+
+document.getElementById('switchUserBtn').onclick = () => {
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_USER);
+    portfolioId = null;
+    userId = null;
+    document.getElementById('userIdInput').value = '';
+    setPortfolioInfo('');
+    showDashboard(false);
+};
+
+document.getElementById('createUserBtn').onclick = async () => {
+    try {
+        const user = await createNewUser();
+        userId = user.id;
+        document.getElementById('userIdInput').value = userId;
+        setPortfolioInfo('Created new user with ID: ' + userId);
+        const portfolio = await createOrFetchPortfolio(userId);
+        portfolioId = portfolio.id;
+        localStorage.setItem(LS_KEY, portfolioId);
+        localStorage.setItem(LS_USER, userId);
+        await loadDashboard();
+    } catch (err) {
+        setPortfolioInfo('Error: ' + err.message);
+        showDashboard(false);
+    }
+};
+
+// Auto-load if portfolioId is present
+window.onload = () => {
+    if (portfolioId && userId) {
+        document.getElementById('userIdInput').value = userId;
+        loadDashboard();
+    } else {
+        showDashboard(false);
+    }
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{
+  "widgets": [
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [ "StockSimulator", "OrdersPerMinute", "Application", "StockSimulator" ]
+        ],
+        "period": 60,
+        "stat": "Sum",
+        "region": "us-west-2",
+        "title": "Orders Per Minute"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 6,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [ "AWS/EC2", "CPUUtilization", "InstanceId", "i-04d8421ec3a2a7ee3" ]
+        ],
+        "period": 300,
+        "stat": "Average",
+        "region": "us-west-2",
+        "title": "EC2 CPU Utilization"
+      }
+    }
+  ]
+}

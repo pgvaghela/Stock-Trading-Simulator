@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .luxury-card {
+    @apply bg-white/90 backdrop-blur-sm rounded-3xl shadow-luxury border border-white/20;
+  }
+  
+  .luxury-button {
+    @apply bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 
+           text-white font-medium py-3 px-6 rounded-2xl shadow-luxury transition-all duration-300 
+           hover:shadow-luxury-lg hover:scale-105 active:scale-95;
+  }
+  
+  .luxury-input {
+    @apply bg-white/80 backdrop-blur-sm border border-white/30 rounded-2xl px-4 py-3 
+           focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent
+           placeholder-gray-500 transition-all duration-300;
+  }
+} 
