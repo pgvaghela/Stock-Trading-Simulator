@@ -44,7 +44,7 @@ A real-time stock trading simulator built with Spring Boot, React, and AWS. Feat
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/stock-trading-simulator.git
+git clone https://github.com/pgvaghela/stock-trading-simulator.git
 cd stock-trading-simulator
 ```
 
@@ -201,7 +201,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 If you encounter any issues or have questions:
-1. Check the [Issues](https://github.com/yourusername/stock-trading-simulator/issues) page
+1. Check the [Issues](https://github.com/pgvaghela/stock-trading-simulator/issues) page
 2. Create a new issue with detailed information
 3. Include your environment details and error logs
 
