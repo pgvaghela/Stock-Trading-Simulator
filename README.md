@@ -1,210 +1,124 @@
 # Stock Trading Simulator
 
-A real-time stock trading simulator built with Spring Boot, React, and AWS. Features live portfolio management, real-time stock prices, and interactive trading experience.
+A real-time stock trading simulator. The backend is written in **C++17** using [Crow](https://github.com/CrowCpp/Crow) for HTTP/WebSocket, SQLite for persistence, and [cpp-httplib](https://github.com/yhirose/cpp-httplib) for Alpha Vantage market data. The frontend is React + Tailwind CSS.
 
-## 🌟 Features
+## Features
 
-- **Real-time Stock Trading**: Buy and sell stocks with live market data
-- **Portfolio Management**: Track your holdings and total portfolio value
-- **Live Performance Chart**: Real-time portfolio performance visualization
-- **Responsive UI**: Modern React frontend with Tailwind CSS
-- **WebSocket Integration**: Live updates for stock prices and portfolio changes
-- **AWS Deployment**: Containerized deployment on Elastic Beanstalk
+- **Real-time stock trading** — buy and sell with live Alpha Vantage prices (mock fallback when rate-limited)
+- **Portfolio management** — track holdings, position value, and transaction history
+- **Live price push** — WebSocket endpoint broadcasts price updates to the React dashboard every 60 s
+- **Portfolio performance chart** — value-history snapshots recorded on every trade
+- **Order-book matching engine** — priority-queue BUY max-heap / SELL min-heap matching orders by price
 
-## 🛠️ Technologies Used
+## Tech Stack
 
-### Backend
-- **Java 17** - Core application language
-- **Spring Boot 3.5.3** - Application framework
-- **Spring Data JPA** - Database operations
-- **Spring WebSocket** - Real-time communication
-- **H2 Database** - In-memory database for development
-- **Maven** - Build tool
+| Layer | Technology |
+|---|---|
+| HTTP server + WebSocket | [Crow v1.2](https://github.com/CrowCpp/Crow) |
+| Database | SQLite 3 |
+| Market data HTTP client | [cpp-httplib](https://github.com/yhirose/cpp-httplib) + OpenSSL |
+| Build system | CMake 3.16+ |
+| Frontend | React 18, Tailwind CSS, Recharts |
+| Container | Docker (multi-stage) |
 
-### Frontend
-- **React 18** - Frontend framework
-- **Tailwind CSS** - Styling framework
-- **Recharts** - Data visualization
-- **Lucide React** - Icons
-- **SockJS** - WebSocket client
-
-### Infrastructure
-- **Docker** - Containerization
-- **AWS Elastic Beanstalk** - Application hosting
-- **AWS RDS** - Database (production)
-- **Alpha Vantage API** - Real-time stock data
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Java 17 or higher
-- Node.js 16 or higher
-- Maven 3.6+
-- Docker (optional, for containerized deployment)
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/pgvaghela/stock-trading-simulator.git
-cd stock-trading-simulator
-```
-
-### 2. Configure API Keys
-
-#### Alpha Vantage API Key
-1. Visit [Alpha Vantage](https://www.alphavantage.co/support/#api-key)
-2. Sign up for a free API key
-3. Update `demo/src/main/resources/application.properties`:
-```properties
-market.api.key=YOUR_ALPHA_VANTAGE_API_KEY_HERE
-```
-
-### 3. Build and Run
-
-#### Option A: Local Development
-```bash
-# Build the backend
-cd demo
-./mvnw clean package
-
-# Run the application
-java -jar target/demo-0.0.1-SNAPSHOT.jar
-```
-
-#### Option B: Docker
-```bash
-# Build and run with Docker
-docker build -t stock-trading-simulator .
-docker run -p 8080:8080 stock-trading-simulator
-```
-
-### 4. Access the Application
-- **Frontend**: http://localhost:8080
-- **Backend API**: http://localhost:8080/api
-- **H2 Console**: http://localhost:8080/h2-console
-
-## 📊 API Endpoints
-
-### Portfolio Management
-- `GET /api/portfolios/{id}` - Get portfolio details
-- `POST /api/portfolios` - Create new portfolio
-- `GET /api/portfolios/{id}/transactions` - Get portfolio transactions
-- `GET /api/portfolios/{id}/value-history` - Get portfolio performance history
-
-### Trading
-- `POST /api/orders` - Place buy/sell orders
-- `GET /api/stocks` - Get all available stocks
-- `GET /api/stocks/{symbol}` - Get specific stock details
-
-### User Management
-- `POST /api/users` - Create new user
-
-## 🏗️ Project Structure
+## Project Structure
 
 ```
-stock-trading-simulator/
-├── demo/                          # Spring Boot application
-│   ├── src/main/java/com/example/demo/
-│   │   ├── controller/           # REST controllers
-│   │   ├── entity/              # JPA entities
-│   │   ├── repository/          # Data repositories
-│   │   ├── service/             # Business logic
-│   │   └── websocket/           # WebSocket configuration
-│   ├── src/main/resources/
-│   │   ├── static/              # React frontend build
-│   │   └── application.properties
-│   └── pom.xml
-├── Dockerfile                    # Docker configuration
+Stock-Trading-Simulator/
+├── backend/                     # C++ backend
+│   ├── CMakeLists.txt
+│   ├── config.env.template
+│   └── src/
+│       ├── main.cpp             # Entry point, Crow app, WebSocket hub
+│       ├── models.h             # Data structs (User, Portfolio, Stock, Transaction…)
+│       ├── database.h/.cpp      # SQLite wrapper + schema init
+│       ├── repositories.h/.cpp  # CRUD data-access layer
+│       ├── services/
+│       │   ├── order_matching.h/.cpp   # Priority-queue order book
+│       │   ├── market_data.h/.cpp      # Alpha Vantage polling + WS broadcast
+│       │   └── metrics.h/.cpp         # Operational metrics logging
+│       └── routes/
+│           ├── users.h/.cpp           # POST /api/users
+│           ├── portfolios.h/.cpp      # GET/POST /api/portfolios
+│           ├── stocks.h/.cpp          # GET /api/stocks
+│           ├── orders.h/.cpp          # POST /api/orders
+│           └── value_history.h/.cpp   # GET /api/portfolios/{id}/value-history
+├── demo/                        # Original Java/Spring Boot source (reference)
+├── Dockerfile                   # Multi-stage: React build → C++ build → runtime
 └── README.md
 ```
 
-## 🚀 AWS Deployment
+## Quick Start
 
 ### Prerequisites
-- AWS CLI configured
-- Elastic Beanstalk CLI installed
-- Docker installed
 
-### Deployment Steps
+- CMake ≥ 3.16
+- GCC or Clang with C++17 support
+- SQLite3 dev headers (`libsqlite3-dev` on Ubuntu)
+- OpenSSL dev headers (`libssl-dev` on Ubuntu)
+- Node.js ≥ 16 (to rebuild the React frontend)
+- Git (CMake FetchContent clones Crow + cpp-httplib automatically)
 
-1. **Configure AWS Credentials**
+### 1. Build the C++ backend
+
 ```bash
-aws configure
+cd backend
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j$(nproc)
 ```
 
-2. **Create Elastic Beanstalk Application**
+### 2. Build the React frontend
+
 ```bash
-eb init stock-trading-simulator --platform docker --region us-west-2
+cd demo/src/main/resources/static/frontend
+npm install
+npm run build
 ```
 
-3. **Set Environment Variables**
+### 3. Configure and run
+
 ```bash
-eb setenv MARKET_API_KEY=your_alpha_vantage_api_key
+cp backend/config.env.template config.env
+# Edit config.env — set MARKET_API_KEY
+source config.env
+export STATIC_DIR="$(pwd)/demo/src/main/resources/static/frontend/build"
+./backend/build/stock_simulator
 ```
 
-4. **Deploy**
+Open http://localhost:8080
+
+### Docker (recommended)
+
 ```bash
-eb create stock-simulator-prod
+# Set your Alpha Vantage key
+docker build -t stock-trading-simulator .
+docker run -p 8080:8080 -e MARKET_API_KEY=your_key stock-trading-simulator
 ```
 
-5. **Access Your Application**
-```bash
-eb open
-```
+## API Endpoints
 
-## 🔧 Configuration
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/users` | Create a user |
+| POST | `/api/portfolios` | Create/fetch portfolio for a user |
+| GET | `/api/portfolios/{id}` | Get portfolio by ID |
+| GET | `/api/portfolios/{id}/transactions` | List all transactions |
+| GET | `/api/portfolios/{id}/value-history` | Portfolio value over time |
+| POST | `/api/orders` | Place a BUY or SELL order |
+| GET | `/api/stocks` | List all tracked stocks with live prices |
+| GET | `/api/stocks/{symbol}` | Get a single stock with live price |
+| WS | `/ws` | WebSocket — receives `{symbol, price, timestamp}` JSON on every price refresh |
 
-### Environment Variables
-- `MARKET_API_KEY` - Alpha Vantage API key
-- `SPRING_PROFILES_ACTIVE` - Spring profile (dev/prod)
-- `DATABASE_URL` - Database connection string (production)
+## Environment Variables
 
-### Database Configuration
-- **Development**: H2 in-memory database
-- **Production**: MySQL RDS instance
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DB_PATH` | `stock_simulator.db` | SQLite file path |
+| `MARKET_API_KEY` | `demo` | Alpha Vantage API key |
+| `MARKET_API_URL` | `https://www.alphavantage.co` | Alpha Vantage base URL |
+| `STATIC_DIR` | *(relative path to build/)* | Directory containing `index.html` |
+| `PORT` | `8080` | HTTP listen port |
 
-## 📈 Features in Detail
+## License
 
-### Real-time Trading
-- Buy and sell stocks with real-time market prices
-- Transaction history tracking
-- Portfolio value calculation
-
-### Portfolio Performance
-- Real-time portfolio value updates
-- Performance chart with historical data
-- Holdings breakdown
-
-### Live Updates
-- WebSocket integration for real-time updates
-- Stock price updates every minute
-- Portfolio value changes reflected immediately
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- [Alpha Vantage](https://www.alphavantage.co/) for real-time stock data
-- [Spring Boot](https://spring.io/projects/spring-boot) for the backend framework
-- [React](https://reactjs.org/) for the frontend framework
-- [Tailwind CSS](https://tailwindcss.com/) for styling
-
-## 📞 Support
-
-If you encounter any issues or have questions:
-1. Check the [Issues](https://github.com/pgvaghela/stock-trading-simulator/issues) page
-2. Create a new issue with detailed information
-3. Include your environment details and error logs
-
----
-
-**Happy Trading! 📈** 
+MIT
